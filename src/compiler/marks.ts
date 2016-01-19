@@ -151,6 +151,9 @@ export const FILL_STROKE_CONFIG = ['fill', 'fillOpacity',
   'stroke', 'strokeWidth', 'strokeDash', 'strokeDashOffset', 'strokeOpacity',
   'opacity'];
 
+const TEXT_CONFIG = ['angle', 'align', 'baseline', 'dx', 'dy', 'fill', 'font', 'fontWeight',
+  'fontStyle', 'radius', 'theta'];
+
 function applyColorAndOpacity(p, model: Model, colorMode?: ColorMode) {
   const filled = colorMode === ColorMode.ALWAYS_FILLED ? true :
     colorMode === ColorMode.ALWAYS_STROKED ? false :
@@ -184,6 +187,16 @@ function applyColorAndOpacity(p, model: Model, colorMode?: ColorMode) {
 export function applyMarkConfig(marksProperties, model: Model, propsList: string[]) {
   propsList.forEach(function(property) {
     const value = model.config().mark[property];
+    if (value !== undefined) {
+      marksProperties[property] = { value: value };
+    }
+  });
+}
+
+// TODO: use this in label methods
+function applyLabelConfig(marksProperties, model: Model, propsList: string[]) {
+  propsList.forEach(function(property) {
+    const value = model.config().label[property];
     if (value !== undefined) {
       marksProperties[property] = { value: value };
     }
@@ -410,8 +423,11 @@ export namespace bar {
         mult: 0.5
       };
     }
-
     applyColorAndOpacity(l, model);
+
+    // This will override some of the properties assigned above when they are
+    // explicitly specified.
+    applyLabelConfig(l, model, TEXT_CONFIG);
     return l;
   }
 }
@@ -815,9 +831,7 @@ export namespace text {
       p.text = { value: fieldDef.value };
     }
 
-    applyMarkConfig(p, model,
-      ['angle', 'align', 'baseline', 'dx', 'dy', 'fill', 'font', 'fontWeight',
-        'fontStyle', 'radius', 'theta']);
+    applyMarkConfig(p, model, TEXT_CONFIG);
 
     return p;
   }
